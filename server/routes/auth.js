@@ -32,20 +32,27 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await UserModel.findOne({email});
-        if(!user){
-            return res.status(400).json("No user exist with this email");
+        console.log("Login Request Received:", { email, password });
+        
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            console.log("No user found with this email");
+            return res.status(400).json("No user exists with this email");
         }
+        
         const isValidPassword = await bcrypt.compare(password, user.password);
-
-        if(!isValidPassword){
+        if (!isValidPassword) {
+            console.log("Password does not match");
             return res.status(400).json("Incorrect password");
         }
-        const token =  jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY);
-
+        
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY);
+        console.log("User Logged In Successfully:", { token });
+        
         res.status(201).json({ token: token });
     } catch (error) {
-         res.status(500).json({ message: 'Login Error', error });
+        console.error("Login Error:", error);
+        res.status(500).json({ message: 'Login Error', error });
     }
 });
 
